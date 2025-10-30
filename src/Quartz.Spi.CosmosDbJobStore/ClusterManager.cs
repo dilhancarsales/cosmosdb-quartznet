@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Logging;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Quartz.Spi.CosmosDbJobStore;
 using Quartz.Spi.CosmosDbJobStore.Util;
 
@@ -9,7 +10,7 @@ namespace Quartz.Impl.AdoJobStore
 {
     internal class ClusterManager
     {
-        private static readonly ILog _logger = LogManager.GetLogger<ClusterManager>();
+        private static readonly ILogger<ClusterManager> _logger = NullLogger<ClusterManager>.Instance;
 
         // keep constant lock requestor id for manager's lifetime
         private readonly Guid requestorId = Guid.NewGuid();
@@ -58,13 +59,13 @@ namespace Quartz.Impl.AdoJobStore
                 res = await jobStore.DoCheckin(requestorId).ConfigureAwait(false);
 
                 numFails = 0;
-                _logger.Debug("Check-in complete.");
+                _logger.LogDebug("Check-in complete.");
             }
             catch (Exception e)
             {
                 if (numFails % jobStore.RetryableActionErrorLogThreshold == 0)
                 {
-                    _logger.Error("Error managing cluster: " + e.Message, e);
+                    _logger.LogError(e, "Error managing cluster: " + e.Message);
                 }
                 numFails++;
             }

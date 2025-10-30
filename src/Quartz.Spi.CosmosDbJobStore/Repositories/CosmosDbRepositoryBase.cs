@@ -2,15 +2,16 @@
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Common.Logging;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Quartz.Spi.CosmosDbJobStore.Entities;
 
 namespace Quartz.Spi.CosmosDbJobStore.Repositories
 {
     public abstract class CosmosDbRepositoryBase<TEntity> where TEntity : QuartzEntityBase
     {
-        protected static readonly ILog _logger = LogManager.GetLogger<CosmosDbRepositoryBase<TEntity>>();
+        protected static readonly ILogger<CosmosDbRepositoryBase<TEntity>> _logger = (ILogger<CosmosDbRepositoryBase<TEntity>>)NullLogger.Instance;
 
         protected readonly string _type;
         protected readonly string _instanceName;

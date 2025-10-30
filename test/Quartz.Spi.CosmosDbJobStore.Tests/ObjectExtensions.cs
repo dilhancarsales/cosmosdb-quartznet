@@ -19,6 +19,7 @@ namespace Quartz.Spi.CosmosDbJobStore.Tests
                 return null;
             }
 
+#pragma warning disable SYSLIB0011 // BinaryFormatter is obsolete but acceptable for test code
             BinaryFormatter bf = new BinaryFormatter();
             using (MemoryStream ms = new MemoryStream())
             {
@@ -26,6 +27,7 @@ namespace Quartz.Spi.CosmosDbJobStore.Tests
                 ms.Seek(0, SeekOrigin.Begin);
                 return (T)bf.Deserialize(ms);
             }
+#pragma warning restore SYSLIB0011
         }
     }
 }

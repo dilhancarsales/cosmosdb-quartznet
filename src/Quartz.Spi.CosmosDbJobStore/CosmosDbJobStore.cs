@@ -4,8 +4,9 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Logging;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Quartz.Impl.AdoJobStore;
 using Quartz.Impl.Matchers;
 using Quartz.Impl.Triggers;
@@ -20,7 +21,7 @@ namespace Quartz.Spi.CosmosDbJobStore
         private const string KeySignalChangeForTxCompletion = "sigChangeForTxCompletion";
         private const string AllGroupsPaused = "_$_ALL_GROUPS_PAUSED_$_";
 
-        private static readonly ILog _logger = LogManager.GetLogger<CosmosDbJobStore>();
+        private static readonly ILogger<CosmosDbJobStore> _logger = NullLogger<CosmosDbJobStore>.Instance;
         
         public static readonly DateTimeOffset? SchedulingSignalDateTime = new DateTimeOffset(1982, 6, 28, 0, 0, 0, TimeSpan.FromSeconds(0));
         
@@ -250,7 +251,7 @@ namespace Quartz.Spi.CosmosDbJobStore
 
         public async Task SchedulerStarted(CancellationToken cancellationToken = new CancellationToken())
         {
-            _logger.Trace($"Scheduler {InstanceName} / {InstanceId} started");
+            _logger.LogTrace($"Scheduler {InstanceName} / {InstanceId} started");
             
             if (Clustered)
             {
@@ -265,7 +266,7 @@ namespace Quartz.Spi.CosmosDbJobStore
                 }
                 catch (Exception e)
                 {
-                    _logger.Error($"Failure occurred during job recovery: {e.Message}", e);
+                    _logger.LogError(e, $"Failure occurred during job recovery: {e.Message}");
                     throw new SchedulerConfigException("Failure occurred during job recovery", e);
                 }
             }
@@ -282,7 +283,7 @@ namespace Quartz.Spi.CosmosDbJobStore
 
         public Task SchedulerPaused(CancellationToken cancellationToken = new CancellationToken())
         {
-            _logger.Trace($"Scheduler {InstanceName} / {InstanceId} paused");
+            _logger.LogTrace($"Scheduler {InstanceName} / {InstanceId} paused");
 
             _schedulerRunning = false;
             
@@ -291,7 +292,7 @@ namespace Quartz.Spi.CosmosDbJobStore
 
         public Task SchedulerResumed(CancellationToken cancellationToken = new CancellationToken())
         {
-            _logger.Trace($"Scheduler {InstanceName} / {InstanceId} resumed");
+            _logger.LogTrace($"Scheduler {InstanceName} / {InstanceId} resumed");
 
             _schedulerRunning = true;
             
@@ -300,7 +301,7 @@ namespace Quartz.Spi.CosmosDbJobStore
 
         public async Task Shutdown(CancellationToken cancellationToken = new CancellationToken())
         {
-            _logger.Trace($"Scheduler {InstanceName} / {InstanceId} shutdown");
+            _logger.LogTrace($"Scheduler {InstanceName} / {InstanceId} shutdown");
             
             if (_misfireHandler != null)
             {
@@ -818,7 +819,7 @@ namespace Quartz.Spi.CosmosDbJobStore
                             : PersistentTriggerState.Waiting;
 
                     await _triggerRepository.Update(trigger);
-                    _logger.Info($"Trigger {name} reset from ERROR state to: {PersistentTriggerState.Waiting}");
+                    _logger.LogInformation($"Trigger {name} reset from ERROR state to: {PersistentTriggerState.Waiting}");
                     break;
             }
         }
@@ -1107,7 +1108,7 @@ namespace Quartz.Spi.CosmosDbJobStore
                         }
                         catch (Exception ex)
                         {
-                            _logger.Error($"Caught exception: {ex.Message}", ex);
+                            _logger.LogError(ex, $"Caught exception: {ex.Message}");
                             result = new TriggerFiredResult(ex);
                         }
 
@@ -1155,7 +1156,7 @@ namespace Quartz.Spi.CosmosDbJobStore
                 
                 if (misfireCount == 0)
                 {
-                    _logger.Debug("Found 0 triggers that missed their scheduled fire-time.");
+                    _logger.LogDebug("Found 0 triggers that missed their scheduled fire-time.");
                 }
                 else
                 {
@@ -1215,7 +1216,7 @@ namespace Quartz.Spi.CosmosDbJobStore
                         SignalSchedulingChangeOnTxCompletion(SchedulingSignalDateTime);
                         break;
                     case SchedulerInstruction.SetTriggerError:
-                        _logger.Info("Trigger " + trigger.Key + " set to ERROR state.");
+                        _logger.LogInformation("Trigger " + trigger.Key + " set to ERROR state.");
                         persistentTrigger.State = PersistentTriggerState.Error;
                         await _triggerRepository.Update(persistentTrigger);
                         SignalSchedulingChangeOnTxCompletion(SchedulingSignalDateTime);
@@ -1226,7 +1227,7 @@ namespace Quartz.Spi.CosmosDbJobStore
                         SignalSchedulingChangeOnTxCompletion(SchedulingSignalDateTime);
                         break;
                     case SchedulerInstruction.SetAllJobTriggersError:
-                        _logger.Info("All triggers of Job " + trigger.JobKey + " set to ERROR state.");
+                        _logger.LogInformation("All triggers of Job " + trigger.JobKey + " set to ERROR state.");
                         persistentTrigger.State = PersistentTriggerState.Error;
                         await _triggerRepository.Update(persistentTrigger);
                         SignalSchedulingChangeOnTxCompletion(SchedulingSignalDateTime);
@@ -1527,7 +1528,7 @@ namespace Quartz.Spi.CosmosDbJobStore
                 
                 result += await _triggerRepository.UpdateAllByStates(PersistentTriggerState.Paused, PersistentTriggerState.PausedBlocked);
 
-                _logger.Info($"Freed {result} triggers from 'acquired' / 'blocked' state.");
+                _logger.LogInformation($"Freed {result} triggers from 'acquired' / 'blocked' state.");
 
                 await RecoverMisfiredJobsInternal(true);
 
@@ -1535,7 +1536,7 @@ namespace Quartz.Spi.CosmosDbJobStore
                     .Select(async trigger => trigger.GetRecoveryTrigger((await _triggerRepository.Get(PersistentTriggerBase.GetId(InstanceName, trigger.GetTriggerKey()))).JobDataMap));
                 var recoveringJobTriggers = (await Task.WhenAll(results)).ToList();
 
-                _logger.Info($"Recovering {recoveringJobTriggers.Count} jobs that were in-progress at the time of the last shut-down.");
+                _logger.LogInformation($"Recovering {recoveringJobTriggers.Count} jobs that were in-progress at the time of the last shut-down.");
 
                 foreach (var recoveringJobTrigger in recoveringJobTriggers)
                     if (await _jobRepository.Exists(PersistentJob.GetId(InstanceName, recoveringJobTrigger.JobKey)))
@@ -1544,7 +1545,7 @@ namespace Quartz.Spi.CosmosDbJobStore
                         await StoreTriggerInternal(recoveringJobTrigger, null, false, PersistentTriggerState.Waiting, false, true);
                     }
 
-                _logger.Info("Recovery complete");
+                _logger.LogInformation("Recovery complete");
 
                 var completedTriggers = await _triggerRepository.GetAllByState(PersistentTriggerState.Complete);
                 foreach (var completedTrigger in completedTriggers)
@@ -1552,10 +1553,10 @@ namespace Quartz.Spi.CosmosDbJobStore
                     await RemoveTriggerInternal(completedTrigger);
                 }
 
-                _logger.Info($"Removed {completedTriggers.Count} 'complete' triggers.");
+                _logger.LogInformation($"Removed {completedTriggers.Count} 'complete' triggers.");
 
                 result = await _firedTriggerRepository.DeleteAllByInstanceId(InstanceId);
-                _logger.Info($"Removed {result} stale fired job entries.");
+                _logger.LogInformation($"Removed {result} stale fired job entries.");
             }
         }
         
@@ -1606,15 +1607,15 @@ namespace Quartz.Spi.CosmosDbJobStore
 
             if (hasMoreMisfiredTriggers)
             {
-                _logger.Info($"Handling the first {misfiredTriggers.Count} triggers that missed their scheduled fire-time. More misfired triggers remain to be processed.");
+                _logger.LogInformation($"Handling the first {misfiredTriggers.Count} triggers that missed their scheduled fire-time. More misfired triggers remain to be processed.");
             }
             else if (misfiredTriggers.Count > 0)
             {
-                _logger.Info($"Handling {misfiredTriggers.Count} trigger(s) that missed their scheduled fire-time.");
+                _logger.LogInformation($"Handling {misfiredTriggers.Count} trigger(s) that missed their scheduled fire-time.");
             }
             else
             {
-                _logger.Debug("Found 0 triggers that missed their scheduled fire-time.");
+                _logger.LogDebug("Found 0 triggers that missed their scheduled fire-time.");
                 return RecoverMisfiredJobsResult.NoOp;
             }
 
@@ -1802,7 +1803,7 @@ namespace Quartz.Spi.CosmosDbJobStore
                 if (!foundThisScheduler && !firstCheckIn)
                 {
                     // TODO: revisit when handle self-failed-out impl'ed (see TODO in clusterCheckIn() below)
-                    _logger.Warn(
+                    _logger.LogWarning(
                         $"This scheduler instance ({InstanceId}) is still active but was recovered by another instance in the cluster.  This may cause inconsistent behavior.");
                 }
 
@@ -1839,7 +1840,7 @@ namespace Quartz.Spi.CosmosDbJobStore
                     var orphanedInstance = new PersistentScheduler(InstanceName, name);
                     orphanedInstances.Add(orphanedInstance);
 
-                    _logger.Warn($"Found orphaned fired triggers for instance: {orphanedInstance.InstanceId}");
+                    _logger.LogWarning($"Found orphaned fired triggers for instance: {orphanedInstance.InstanceId}");
                 }
             }
 
@@ -1901,7 +1902,7 @@ namespace Quartz.Spi.CosmosDbJobStore
             {
                 foreach (var scheduler in failedInstances)
                 {
-                    _logger.Info($"ClusterManager: Scanning for instance \"{scheduler.InstanceId}\"\'s failed in-progress jobs.");
+                    _logger.LogInformation($"ClusterManager: Scanning for instance \"{scheduler.InstanceId}\"\'s failed in-progress jobs.");
 
                     var firedTriggers = await _firedTriggerRepository.GetAllByInstanceId(scheduler.InstanceId);
 
@@ -1965,7 +1966,7 @@ namespace Quartz.Spi.CosmosDbJobStore
                             }
                             else
                             {
-                                _logger.Warn($"ClusterManager: failed job \'{jKey}\' no longer exists, cannot schedule recovery.");
+                                _logger.LogWarning($"ClusterManager: failed job \'{jKey}\' no longer exists, cannot schedule recovery.");
                                 otherCount++;
                             }
                         }
@@ -2035,11 +2036,11 @@ namespace Quartz.Spi.CosmosDbJobStore
         {
             if (val > 0)
             {
-                _logger.Info(warning);
+                _logger.LogInformation(warning);
             }
             else
             {
-                _logger.Debug(warning);
+                _logger.LogDebug(warning);
             }
         }
     }

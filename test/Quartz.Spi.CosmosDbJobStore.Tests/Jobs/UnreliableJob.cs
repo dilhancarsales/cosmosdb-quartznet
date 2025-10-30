@@ -1,13 +1,14 @@
 using System;
 using System.Threading.Tasks;
-using Common.Logging;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Quartz.Spi.CosmosDbJobStore.Tests.Jobs
 {
     [DisallowConcurrentExecution]
     public class UnreliableJob : IJob
     {
-        private static readonly ILog _logger = LogManager.GetLogger<UnreliableJob>();
+        private static readonly ILogger<UnreliableJob> _logger = NullLogger<UnreliableJob>.Instance;
         
         public static int TimesRun;
 
@@ -24,7 +25,7 @@ namespace Quartz.Spi.CosmosDbJobStore.Tests.Jobs
 
                 await context.Scheduler.RescheduleJob(t.Key, t);
                 
-                _logger.Info("I have died, but I will be resurrected in 5 seconds :-P");
+                _logger.LogInformation("I have died, but I will be resurrected in 5 seconds :-P");
                 
                 // throw new JobExecutionException(false); According to Quartz.NET best practices, we should handle retry ourselves 
             }

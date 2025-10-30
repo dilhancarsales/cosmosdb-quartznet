@@ -29,7 +29,8 @@ using System.Reflection;
 using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Logging;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Quartz.Core;
 using Quartz.Impl;
 using Quartz.Impl.AdoJobStore.Common;
@@ -134,7 +135,7 @@ namespace Quartz.Spi.CosmosDbJobStore.Tests
 
         private PropertiesParser cfg;
 
-        private static readonly ILog log = LogManager.GetLogger(typeof(HackedStdSchedulerFactory));
+        private static readonly ILogger log = NullLogger.Instance;
 
         private string SchedulerName
         {
@@ -142,7 +143,7 @@ namespace Quartz.Spi.CosmosDbJobStore.Tests
             get { return cfg.GetStringProperty(PropertySchedulerInstanceName, "QuartzScheduler"); }
         }
 
-        private ILog Log => log;
+        private ILogger Log => log;
 
         /// <summary>
         /// Returns a handle to the default Scheduler, creating it if it does not
@@ -219,7 +220,7 @@ namespace Quartz.Spi.CosmosDbJobStore.Tests
             }
             catch (SecurityException)
             {
-                log.WarnFormat("Unable to resolve file path '{0}' due to security exception, probably running under medium trust");
+                log.LogWarning("Unable to resolve file path '{0}' due to security exception, probably running under medium trust");
                 propFileName = "quartz.config";
             }
 
@@ -230,11 +231,11 @@ namespace Quartz.Spi.CosmosDbJobStore.Tests
                 {
                     PropertiesParser pp = PropertiesParser.ReadFromFileResource(propFileName);
                     props = pp.UnderlyingProperties;
-                    Log.Info($"Quartz.NET properties loaded from configuration file '{propFileName}'");
+                    Log.LogInformation($"Quartz.NET properties loaded from configuration file '{propFileName}'");
                 }
                 catch (Exception ex)
                 {
-                    Log.Error("Could not load properties for Quartz from file {0}: {1}".FormatInvariant(propFileName, ex.Message), ex);
+                    Log.LogError(ex, "Could not load properties for Quartz from file {0}: {1}", propFileName, ex.Message);
                 }
             }
             if (props == null)
@@ -244,11 +245,11 @@ namespace Quartz.Spi.CosmosDbJobStore.Tests
                 {
                     PropertiesParser pp = PropertiesParser.ReadFromEmbeddedAssemblyResource("Quartz.quartz.config");
                     props = pp.UnderlyingProperties;
-                    Log.Info("Default Quartz.NET properties loaded from embedded resource file");
+                    Log.LogInformation("Default Quartz.NET properties loaded from embedded resource file");
                 }
                 catch (Exception ex)
                 {
-                    Log.Error("Could not load default properties for Quartz from Quartz assembly: {0}".FormatInvariant(ex.Message), ex);
+                    Log.LogError("Could not load default properties for Quartz from Quartz assembly: {0}".FormatInvariant(ex.Message), ex);
                 }
             }
             if (props == null)
@@ -653,7 +654,7 @@ Please add configuration to your application config file to correctly initialize
                 try
                 {
                     objectSerializer = ObjectUtils.InstantiateType<IObjectSerializer>(loadHelper.LoadType(objectSerializerType));
-                    log.Info("Using object serializer: " + objectSerializerType);
+                    log.LogInformation("Using object serializer: " + objectSerializerType);
 
                     ObjectUtils.SetObjectProperties(objectSerializer, tProps);
 
@@ -865,7 +866,7 @@ Please add configuration to your application config file to correctly initialize
                     }
                     catch (Exception e)
                     {
-                        Log.Error("Couldn't generate instance Id!", e);
+                        Log.LogError("Couldn't generate instance Id!", e);
                         throw new InvalidOperationException("Cannot run without an instance id.");
                     }
                 }
@@ -897,7 +898,9 @@ Please add configuration to your application config file to correctly initialize
                     rsrcs.AddSchedulerPlugin(plugin);
                 }
 
-                qs = new QuartzScheduler(rsrcs, idleWaitTime);
+#pragma warning disable CS1729 // QuartzScheduler constructor may have changed in newer versions
+                qs = new QuartzScheduler(rsrcs);
+#pragma warning restore CS1729
                 qsInited = true;
 
                 // Create Scheduler ref...
@@ -942,9 +945,9 @@ Please add configuration to your application config file to correctly initialize
                 jrsf.Initialize(sched);
                 qs.Initialize();
 
-                Log.Info("Quartz scheduler '{0}' initialized".FormatInvariant(sched.SchedulerName));
+                Log.LogInformation("Quartz scheduler '{0}' initialized".FormatInvariant(sched.SchedulerName));
 
-                Log.Info("Quartz scheduler version: {0}".FormatInvariant(qs.Version));
+                Log.LogInformation("Quartz scheduler version: {0}".FormatInvariant(qs.Version));
 
                 // prevents the repository from being garbage collected
 //                qs.AddNoGCObject(schedRep);
@@ -985,7 +988,7 @@ Please add configuration to your application config file to correctly initialize
             }
             catch (Exception e)
             {
-                Log.Error("Got another exception while shutting down after instantiation exception", e);
+                Log.LogError("Got another exception while shutting down after instantiation exception", e);
             }
         }
 
@@ -1076,7 +1079,7 @@ Please add configuration to your application config file to correctly initialize
             } 
             catch (MemberAccessException)
             {
-                log.WarnFormat("Unable to set property {0} for {1}. Possibly older binary compilation.", propertyName, target);
+                log.LogWarning("Unable to set property {0} for {1}. Possibly older binary compilation.", propertyName, target);
             }
         }
         
@@ -1088,7 +1091,7 @@ Please add configuration to your application config file to correctly initialize
             }
             catch (Exception e)
             {
-                log.Warn("could not read configuration using ConfigurationManager.GetSection: " + e.Message);
+                log.LogWarning("could not read configuration using ConfigurationManager.GetSection: " + e.Message);
                 return null;
             }
         }

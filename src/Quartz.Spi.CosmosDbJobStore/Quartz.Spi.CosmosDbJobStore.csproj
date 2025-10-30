@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <AssemblyName>Quartz.Spi.CosmosDbJobStore</AssemblyName>
         <RootNamespace>Quartz.Spi.CosmosDbJobStore</RootNamespace>
         <LangVersion>latest</LangVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Version>1.1.0</Version>
+        <Version>2.0.0</Version>
         <Authors>Frantisek Jandos</Authors>
         <Copyright>Oriflame Software</Copyright>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -14,7 +14,7 @@
         <RepositoryUrl>https://github.com/Oriflame/cosmosdb-quartznet</RepositoryUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <Description>A CosmosDb job store for Quartz.NET. This library targets the Microsoft.Azure.Cosmos v3 driver.</Description>
-        <PackageReleaseNotes>Updated Quartz packages to ver. 3.6.2. Implemented ResetTriggerFromErrorState. License switched to MIT.</PackageReleaseNotes>
+        <PackageReleaseNotes>Upgraded to .NET 8 and updated all packages to latest versions (Quartz 3.15.1, Azure.Cosmos 3.54.0). Replaced Common.Logging with Microsoft.Extensions.Logging.</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,11 +23,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Common.Logging" Version="3.4.1" />
-      <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.17.1" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-      <PackageReference Include="Quartz" Version="3.6.2" />
-      <PackageReference Include="Quartz.Serialization.Json" Version="3.6.2" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+      <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.54.0" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+      <PackageReference Include="Quartz" Version="3.15.1" />
+      <PackageReference Include="Quartz.Serialization.Json" Version="3.15.0" />
     </ItemGroup>
 
 </Project>

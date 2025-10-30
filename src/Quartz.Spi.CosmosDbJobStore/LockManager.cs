@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Logging;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Quartz.Spi.CosmosDbJobStore.Entities;
 using Quartz.Spi.CosmosDbJobStore.Repositories;
 
@@ -21,7 +22,7 @@ namespace Quartz.Spi.CosmosDbJobStore
         private readonly string _instanceName;
         private readonly string _instanceId;
         
-        private static readonly ILog _logger = LogManager.GetLogger<LockManager>();
+        private static readonly ILogger<LockManager> _logger = NullLogger<LockManager>.Instance;
 
         private bool _disposed;
         
@@ -47,7 +48,7 @@ namespace Quartz.Spi.CosmosDbJobStore
             {
                 if (!_lockRepository.TryDelete(lck.Id).GetAwaiter().GetResult())
                 {
-                    _logger.Warn($"Unable to delete pending lock {lck.Id} from storage.");
+                    _logger.LogWarning($"Unable to delete pending lock {lck.Id} from storage.");
                 }
             }
         }
@@ -81,7 +82,7 @@ namespace Quartz.Spi.CosmosDbJobStore
 
         private class DisposableLock : IDisposable
         {
-            private static readonly ILog _logger = LogManager.GetLogger<LockManager>();
+            private static readonly ILogger<LockManager> _logger = NullLogger<LockManager>.Instance;
             
             private readonly LockManager _lockManager;
             private readonly PersistentLock _lck;
@@ -105,7 +106,7 @@ namespace Quartz.Spi.CosmosDbJobStore
 
                 if (!_lockManager._lockRepository.TryDelete(_lck.Id).GetAwaiter().GetResult())
                 {
-                    _logger.Warn($"Unable to delete pending lock {_lck.Id} from storage. It may have expired.");
+                    _logger.LogWarning($"Unable to delete pending lock {_lck.Id} from storage. It may have expired.");
                 }
                 
                 _disposed = true;

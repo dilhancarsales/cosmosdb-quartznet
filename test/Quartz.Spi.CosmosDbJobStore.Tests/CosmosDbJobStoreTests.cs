@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Logging;
 using FluentAssertions;
 using Quartz.Impl.Matchers;
 using Quartz.Logging;
@@ -30,7 +29,6 @@ namespace Quartz.Spi.CosmosDbJobStore.Tests
         public CosmosDbJobStoreTests(ITestOutputHelper output)
         {
             LogProvider.SetCurrentLogProvider(new XunitConsoleLogProvider(output)); // Setup Quartz.NET logger
-            LogManager.Adapter = new XunitConsoleLogAdapter(output); // Setup Common.logging
 
             _schedulers = new IScheduler[5];
             

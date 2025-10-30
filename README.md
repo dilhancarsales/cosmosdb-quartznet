@@ -1,8 +1,10 @@
 CosmosDb Job Store for Quartz.NET
-[![Downloads](https://img.shields.io/nuget/dt/Quartz.Spi.CosmosDbJobStore.svg)](https://www.nuget.org/packages/Quartz.Spi.CosmosDbJobStore/)
+[![Downloads](https://img.shields.io/nuget/dt/Ozone3.Quartz.CosmosDbJobStore.svg)](https://www.nuget.org/packages/Ozone3.Quartz.CosmosDbJobStore/)
 ================================
 
 A distributed job store implementation for Quartz.NET that uses Azure CosmosDB as the backing store. This enables you to run Quartz.NET in a clustered environment with Azure CosmosDB as the central job repository.
+
+> **Note:** This is a fork of the original [Oriflame/cosmosdb-quartznet](https://github.com/Oriflame/cosmosdb-quartznet) project by [Frantisek Jandos](https://github.com/frantisekvasa). We're grateful for the original work and continue to maintain and enhance this library.
 
 Originally based on [Quartz.NET MongoDb Job Store](https://github.com/chrisdrobison/mongodb-quartz-net), this implementation targets the Microsoft.Azure.Cosmos v3 SDK.
 
@@ -27,12 +29,12 @@ Originally based on [Quartz.NET MongoDb Job Store](https://github.com/chrisdrobi
 
 ### Via NuGet Package Manager
 ```
-Install-Package Quartz.Spi.CosmosDbJobStore
+Install-Package Ozone3.Quartz.CosmosDbJobStore
 ```
 
 ### Via .NET CLI
 ```bash
-dotnet add package Quartz.Spi.CosmosDbJobStore
+dotnet add package Ozone3.Quartz.CosmosDbJobStore
 ```
 
 ## Quick Start
@@ -361,7 +363,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - 📖 [Quartz.NET Documentation](https://www.quartz-scheduler.net/documentation/)
 - 📖 [Azure Cosmos DB Documentation](https://docs.microsoft.com/en-us/azure/cosmos-db/)
-- 🐛 [Report Issues](https://github.com/Oriflame/cosmosdb-quartznet/issues)
+- 🐛 [Report Issues](https://github.com/ozone3950/cosmosdb-quartznet/issues)
 
 ## Acknowledgments
 

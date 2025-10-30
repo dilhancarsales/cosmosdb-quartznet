@@ -2,18 +2,19 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
+        <PackageId>Ozone3.Quartz.CosmosDbJobStore</PackageId>
         <AssemblyName>Quartz.Spi.CosmosDbJobStore</AssemblyName>
         <RootNamespace>Quartz.Spi.CosmosDbJobStore</RootNamespace>
         <LangVersion>latest</LangVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Version>2.0.0</Version>
-        <Authors>Frantisek Jandos</Authors>
-        <Copyright>Oriflame Software</Copyright>
+        <Authors>Frantisek Jandos, Dilhan Jayathilake</Authors>
+        <Copyright>Ozone3</Copyright>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <PackageProjectUrl>https://github.com/Oriflame/cosmosdb-quartznet</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/Oriflame/cosmosdb-quartznet</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/ozone3950/cosmosdb-quartznet</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/ozone3950/cosmosdb-quartznet</RepositoryUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <Description>A CosmosDb job store for Quartz.NET. This library targets the Microsoft.Azure.Cosmos v3 driver.</Description>
+        <Description>A CosmosDb job store for Quartz.NET. This library targets the Microsoft.Azure.Cosmos v3 driver. Fork of Oriflame/cosmosdb-quartznet.</Description>
         <PackageReleaseNotes>Upgraded to .NET 8 and updated all packages to latest versions (Quartz 3.15.1, Azure.Cosmos 3.54.0). Replaced Common.Logging with Microsoft.Extensions.Logging.</PackageReleaseNotes>
     </PropertyGroup>
 
